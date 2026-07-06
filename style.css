@@ -1,0 +1,306 @@
+:root {
+  color-scheme: dark;
+  --bg: #101214;
+  --panel: #1b2025;
+  --panel-2: #252b31;
+  --grid: #2f373d;
+  --text: #f5f7f8;
+  --muted: #aeb7bd;
+  --accent: #31c7b7;
+  --danger: #ff6b6b;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, rgba(49, 199, 183, 0.12), transparent 36%),
+    linear-gradient(315deg, rgba(245, 166, 35, 0.10), transparent 35%),
+    var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  touch-action: manipulation;
+}
+
+button {
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  user-select: none;
+}
+
+.game-shell {
+  width: min(100vw, 1040px);
+  min-height: 100svh;
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.metric,
+.side-panel {
+  background: color-mix(in srgb, var(--panel) 92%, black);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 32px var(--shadow);
+}
+
+.metric {
+  min-height: 56px;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.metric span,
+.side-panel h2 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.metric strong {
+  display: block;
+  margin-top: 2px;
+  font-size: clamp(1.15rem, 4vw, 1.8rem);
+  line-height: 1;
+}
+
+.play-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(110px, 150px) minmax(220px, 45vh) minmax(110px, 150px);
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.board-wrap {
+  position: relative;
+  width: min(100%, 45vh, 390px);
+  aspect-ratio: 1 / 2;
+  justify-self: center;
+}
+
+#gameCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 8px;
+  background: #15191d;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 18px 44px var(--shadow);
+}
+
+.side-panel {
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  justify-items: stretch;
+}
+
+.side-panel canvas {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: 8px;
+  background: var(--panel-2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.compact-button,
+.touch-button {
+  min-height: 44px;
+  border-radius: 8px;
+  background: #303840;
+  font-weight: 800;
+  transition: transform 120ms ease, background 120ms ease;
+  touch-action: none;
+}
+
+.compact-button:active,
+.touch-button:active,
+.is-pressed {
+  transform: translateY(1px) scale(0.98);
+  background: var(--accent);
+  color: #071211;
+}
+
+.touch-controls {
+  display: grid;
+  gap: 8px;
+  touch-action: none;
+}
+
+.control-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.touch-button {
+  min-height: 54px;
+  font-size: 1.1rem;
+}
+
+.touch-button.wide {
+  background: #e9b44c;
+  color: #17120a;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  padding: 20px;
+  text-align: center;
+  border-radius: 8px;
+  background: rgba(8, 10, 12, 0.74);
+  backdrop-filter: blur(4px);
+}
+
+.overlay strong {
+  font-size: clamp(1.6rem, 6vw, 2.7rem);
+  line-height: 1;
+}
+
+.overlay span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (orientation: portrait) {
+  body {
+    align-items: stretch;
+  }
+
+  .play-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 58vw) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .board-wrap {
+    width: min(58vw, 48svh, 330px);
+  }
+
+  .side-panel {
+    align-self: start;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .compact-button {
+    min-height: 40px;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .game-shell {
+    gap: 8px;
+  }
+
+  .play-layout {
+    grid-template-columns: minmax(72px, 1fr) minmax(162px, 60vw) minmax(72px, 1fr);
+  }
+
+  .board-wrap {
+    width: min(60vw, 46svh, 285px);
+  }
+
+  .metric {
+    min-height: 46px;
+    padding: 6px 8px;
+  }
+
+  .metric span,
+  .side-panel h2 {
+    font-size: 0.64rem;
+  }
+
+  .side-panel {
+    padding: 7px;
+  }
+
+  .touch-button {
+    min-height: 48px;
+  }
+}
+
+@media (max-height: 690px) {
+  .game-shell {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .touch-button {
+    min-height: 42px;
+  }
+
+  .compact-button {
+    min-height: 36px;
+  }
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  .play-layout {
+    grid-template-columns: minmax(110px, 150px) minmax(220px, min(45vh, calc((100svh - 108px) / 2))) minmax(110px, 150px);
+  }
+
+  .board-wrap {
+    width: min(100%, 45vh, calc((100svh - 108px) / 2), 390px);
+  }
+
+}
+
+@media (min-width: 900px) and (orientation: landscape) and (hover: hover) and (pointer: fine) {
+  .touch-controls {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) and (orientation: landscape) and (pointer: coarse) {
+  .play-layout {
+    grid-template-columns: minmax(110px, 150px) minmax(220px, min(39vh, calc((100svh - 220px) / 2))) minmax(110px, 150px);
+  }
+
+  .board-wrap {
+    width: min(100%, 39vh, calc((100svh - 220px) / 2), 350px);
+  }
+}

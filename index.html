@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Falling Blocks Puzzle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell" aria-label="Falling blocks puzzle">
+    <section class="status-strip" aria-label="Game status">
+      <div class="metric">
+        <span>Score</span>
+        <strong id="score">0</strong>
+      </div>
+      <div class="metric">
+        <span>Level</span>
+        <strong id="level">1</strong>
+      </div>
+      <div class="metric">
+        <span>Lines</span>
+        <strong id="lines">0</strong>
+      </div>
+    </section>
+
+    <section class="play-layout">
+      <aside class="side-panel left-panel" aria-label="Hold piece">
+        <h2>Hold</h2>
+        <canvas id="holdCanvas" width="120" height="120" aria-label="Held block"></canvas>
+        <button id="holdButton" class="compact-button" type="button">Hold</button>
+      </aside>
+
+      <section class="board-wrap" aria-label="Play field">
+        <canvas id="gameCanvas" width="300" height="600"></canvas>
+        <div id="overlay" class="overlay hidden" aria-live="polite">
+          <strong id="overlayTitle"></strong>
+          <span id="overlayText"></span>
+        </div>
+      </section>
+
+      <aside class="side-panel right-panel" aria-label="Next piece">
+        <h2>Next</h2>
+        <canvas id="nextCanvas" width="120" height="120" aria-label="Next block"></canvas>
+        <button id="pauseButton" class="compact-button" type="button">Pause</button>
+        <button id="restartButton" class="compact-button" type="button">Restart</button>
+      </aside>
+    </section>
+
+    <section class="touch-controls" aria-label="Touch controls">
+      <div class="control-row">
+        <button data-action="left" class="touch-button" type="button" aria-label="Move left">&larr;</button>
+        <button data-action="rotate" class="touch-button" type="button" aria-label="Rotate">&#8635;</button>
+        <button data-action="right" class="touch-button" type="button" aria-label="Move right">&rarr;</button>
+      </div>
+      <div class="control-row">
+        <button data-action="softDrop" class="touch-button" type="button" aria-label="Soft drop">&darr;</button>
+        <button data-action="hardDrop" class="touch-button wide" type="button" aria-label="Hard drop">Drop</button>
+        <button data-action="hold" class="touch-button" type="button" aria-label="Hold">Hold</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

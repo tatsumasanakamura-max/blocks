@@ -7,7 +7,7 @@
   --text: #f5f7f8;
   --muted: #aeb7bd;
   --accent: #31c7b7;
-  --danger: #ff6b6b;
+  --button: #303840;
   --shadow: rgba(0, 0, 0, 0.35);
 }
 
@@ -39,12 +39,125 @@ body {
   touch-action: manipulation;
 }
 
+body.kids-theme {
+  color-scheme: light;
+  --bg: #fff7dc;
+  --panel: #ffffff;
+  --panel-2: #fff2bb;
+  --grid: #f1d98a;
+  --text: #2c3a49;
+  --muted: #607080;
+  --accent: #ff8fb3;
+  --button: #50b9e8;
+  --shadow: rgba(90, 63, 24, 0.18);
+  background:
+    radial-gradient(circle at 12% 14%, rgba(255, 199, 77, 0.38), transparent 18%),
+    radial-gradient(circle at 87% 18%, rgba(95, 190, 232, 0.28), transparent 20%),
+    linear-gradient(180deg, #fff4c8 0%, #dbf6ff 100%);
+}
+
 button {
   border: 0;
   color: inherit;
   font: inherit;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.app-shell {
+  width: min(100vw, 1080px);
+  min-height: 100svh;
+}
+
+.mode-screen {
+  min-height: 100svh;
+  padding: max(20px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  display: grid;
+  align-content: center;
+  gap: 22px;
+}
+
+.mode-hero {
+  text-align: center;
+}
+
+.eyebrow,
+.lead,
+.mode-hint {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.mode-hero h1 {
+  margin: 6px 0;
+  font-size: clamp(2.2rem, 8vw, 4.3rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mode-card {
+  min-height: 220px;
+  padding: 18px;
+  border-radius: 8px;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 44px var(--shadow);
+}
+
+.mode-card:active {
+  transform: translateY(2px) scale(0.99);
+}
+
+.mode-card strong {
+  font-size: clamp(1.3rem, 3.2vw, 1.9rem);
+}
+
+.mode-card span,
+.mode-card em {
+  color: var(--muted);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.mode-card em {
+  color: var(--accent);
+}
+
+.mode-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--button);
+  color: #fff;
+  font-size: 1.7rem;
+}
+
+.kids-card,
+.challenge-card {
+  background: linear-gradient(160deg, #ffffff 0%, #fff4c6 100%);
+  color: #2c3a49;
+}
+
+.challenge-card .mode-icon {
+  background: #ff9868;
 }
 
 .game-shell {
@@ -52,8 +165,38 @@ button {
   min-height: 100svh;
   padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   gap: 10px;
+}
+
+.game-topbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.mode-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.top-button,
+.compact-button,
+.touch-button,
+.overlay-button {
+  min-height: 44px;
+  border-radius: 8px;
+  background: var(--button);
+  color: #fff;
+  font-weight: 900;
+  transition: transform 120ms ease, background 120ms ease;
+  touch-action: none;
+}
+
+.top-button {
+  padding: 0 14px;
 }
 
 .status-strip {
@@ -62,11 +205,21 @@ button {
   gap: 8px;
 }
 
+.status-strip.has-timer {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .metric,
 .side-panel {
   background: color-mix(in srgb, var(--panel) 92%, black);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 14px 32px var(--shadow);
+}
+
+body.kids-theme .metric,
+body.kids-theme .side-panel,
+body.kids-theme .mode-card {
+  border: 2px solid rgba(255, 185, 77, 0.45);
 }
 
 .metric {
@@ -83,9 +236,15 @@ button {
   margin: 0;
   color: var(--muted);
   font-size: 0.74rem;
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+body.kids-theme .metric span,
+body.kids-theme .side-panel h2 {
+  font-size: 0.9rem;
+  text-transform: none;
 }
 
 .metric strong {
@@ -93,6 +252,11 @@ button {
   margin-top: 2px;
   font-size: clamp(1.15rem, 4vw, 1.8rem);
   line-height: 1;
+}
+
+.metric small {
+  color: var(--accent);
+  font-weight: 900;
 }
 
 .play-layout {
@@ -121,12 +285,26 @@ button {
   box-shadow: 0 18px 44px var(--shadow);
 }
 
+body.kids-theme #gameCanvas {
+  border: 4px solid #ffffff;
+  border-radius: 16px;
+  background: #fff9dc;
+}
+
 .side-panel {
   border-radius: 8px;
   padding: 12px;
   display: grid;
   gap: 10px;
   justify-items: stretch;
+}
+
+body.kids-theme .side-panel,
+body.kids-theme .metric,
+body.kids-theme .compact-button,
+body.kids-theme .touch-button,
+body.kids-theme .top-button {
+  border-radius: 16px;
 }
 
 .side-panel canvas {
@@ -138,18 +316,10 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.compact-button,
-.touch-button {
-  min-height: 44px;
-  border-radius: 8px;
-  background: #303840;
-  font-weight: 800;
-  transition: transform 120ms ease, background 120ms ease;
-  touch-action: none;
-}
-
 .compact-button:active,
 .touch-button:active,
+.top-button:active,
+.overlay-button:active,
 .is-pressed {
   transform: translateY(1px) scale(0.98);
   background: var(--accent);
@@ -173,9 +343,21 @@ button {
   font-size: 1.1rem;
 }
 
+body.kids-theme .touch-button {
+  min-height: 64px;
+  font-size: 1.08rem;
+  background: #4cb7e9;
+  color: #05364e;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.12);
+}
+
 .touch-button.wide {
   background: #e9b44c;
   color: #17120a;
+}
+
+body.kids-theme .touch-button.wide {
+  background: #ffbd59;
 }
 
 .overlay {
@@ -183,12 +365,18 @@ button {
   inset: 0;
   display: grid;
   place-content: center;
-  gap: 8px;
+  gap: 10px;
   padding: 20px;
   text-align: center;
   border-radius: 8px;
   background: rgba(8, 10, 12, 0.74);
   backdrop-filter: blur(4px);
+}
+
+body.kids-theme .overlay {
+  color: #2c3a49;
+  background: rgba(255, 252, 230, 0.88);
+  border-radius: 16px;
 }
 
 .overlay strong {
@@ -198,16 +386,73 @@ button {
 
 .overlay span {
   color: var(--muted);
-  font-weight: 700;
+  font-weight: 900;
 }
 
-.hidden {
-  display: none;
+.overlay-stats {
+  display: grid;
+  gap: 4px;
+  font-weight: 900;
+}
+
+.overlay-button {
+  padding: 0 18px;
+  justify-self: center;
+}
+
+.cheer-message,
+.score-pop {
+  position: absolute;
+  left: 50%;
+  pointer-events: none;
+  z-index: 2;
+  font-weight: 1000;
+  text-align: center;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
+}
+
+.cheer-message {
+  top: 38%;
+  transform: translate(-50%, -50%);
+  min-width: 70%;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #ef6f6c;
+  font-size: clamp(1.2rem, 5vw, 2rem);
+  animation: cheerPop 900ms ease both;
+}
+
+.score-pop {
+  top: 28%;
+  color: #ff9f1c;
+  font-size: clamp(1rem, 4vw, 1.6rem);
+  animation: scoreFloat 850ms ease both;
+}
+
+@keyframes cheerPop {
+  0% { opacity: 0; transform: translate(-50%, -38%) scale(0.82); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  100% { opacity: 0; transform: translate(-50%, -64%) scale(0.98); }
+}
+
+@keyframes scoreFloat {
+  0% { opacity: 0; transform: translate(-50%, 8px) scale(0.9); }
+  20% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+  100% { opacity: 0; transform: translate(-50%, -42px) scale(1); }
 }
 
 @media (orientation: portrait) {
   body {
     align-items: stretch;
+  }
+
+  .mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-card {
+    min-height: 145px;
   }
 
   .play-layout {
@@ -216,7 +461,7 @@ button {
   }
 
   .board-wrap {
-    width: min(58vw, 48svh, 330px);
+    width: min(58vw, 45svh, 330px);
   }
 
   .side-panel {
@@ -236,22 +481,59 @@ button {
     gap: 8px;
   }
 
+  .game-topbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .game-topbar > div {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  #modeBackButton {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #soundButton {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .status-strip,
+  .status-strip.has-timer {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .status-strip:not(.has-timer) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .play-layout {
     grid-template-columns: minmax(72px, 1fr) minmax(162px, 60vw) minmax(72px, 1fr);
   }
 
   .board-wrap {
-    width: min(60vw, 46svh, 285px);
+    width: min(60vw, 42svh, 285px);
   }
 
   .metric {
     min-height: 46px;
-    padding: 6px 8px;
+    padding: 6px 7px;
   }
 
   .metric span,
   .side-panel h2 {
     font-size: 0.64rem;
+  }
+
+  body.kids-theme .metric span,
+  body.kids-theme .side-panel h2 {
+    font-size: 0.72rem;
+  }
+
+  .metric strong {
+    font-size: 1.1rem;
   }
 
   .side-panel {
@@ -261,16 +543,22 @@ button {
   .touch-button {
     min-height: 48px;
   }
+
+  body.kids-theme .touch-button {
+    min-height: 56px;
+    font-size: 0.95rem;
+  }
 }
 
-@media (max-height: 690px) {
+@media (max-height: 720px) {
   .game-shell {
     padding-top: 6px;
     padding-bottom: 6px;
   }
 
-  .touch-button {
-    min-height: 42px;
+  .touch-button,
+  body.kids-theme .touch-button {
+    min-height: 44px;
   }
 
   .compact-button {
@@ -280,16 +568,23 @@ button {
 
 @media (min-width: 900px) and (orientation: landscape) {
   .play-layout {
-    grid-template-columns: minmax(110px, 150px) minmax(220px, min(45vh, calc((100svh - 108px) / 2))) minmax(110px, 150px);
+    grid-template-columns: minmax(110px, 150px) minmax(220px, min(36vh, calc((100svh - 260px) / 2))) minmax(110px, 150px);
   }
 
   .board-wrap {
-    width: min(100%, 45vh, calc((100svh - 108px) / 2), 390px);
+    width: min(100%, 36vh, calc((100svh - 260px) / 2), 350px);
   }
-
 }
 
 @media (min-width: 900px) and (orientation: landscape) and (hover: hover) and (pointer: fine) {
+  .play-layout {
+    grid-template-columns: minmax(110px, 150px) minmax(220px, min(39vh, calc((100svh - 220px) / 2))) minmax(110px, 150px);
+  }
+
+  .board-wrap {
+    width: min(100%, 39vh, calc((100svh - 220px) / 2), 350px);
+  }
+
   .touch-controls {
     display: none;
   }
@@ -297,10 +592,10 @@ button {
 
 @media (min-width: 900px) and (orientation: landscape) and (pointer: coarse) {
   .play-layout {
-    grid-template-columns: minmax(110px, 150px) minmax(220px, min(39vh, calc((100svh - 220px) / 2))) minmax(110px, 150px);
+    grid-template-columns: minmax(110px, 150px) minmax(220px, min(36vh, calc((100svh - 240px) / 2))) minmax(110px, 150px);
   }
 
   .board-wrap {
-    width: min(100%, 39vh, calc((100svh - 220px) / 2), 350px);
+    width: min(100%, 36vh, calc((100svh - 240px) / 2), 350px);
   }
 }

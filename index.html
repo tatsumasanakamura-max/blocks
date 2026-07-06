@@ -7,56 +7,107 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="game-shell" aria-label="Falling blocks puzzle">
-    <section class="status-strip" aria-label="Game status">
-      <div class="metric">
-        <span>Score</span>
-        <strong id="score">0</strong>
+  <main class="app-shell" aria-label="落ちものブロックパズル">
+    <section id="modeScreen" class="mode-screen" aria-label="モード選択">
+      <div class="mode-hero">
+        <p class="eyebrow">えらべるブロックゲーム</p>
+        <h1>ブロックパズル</h1>
+        <p class="lead">好きなモードを選んでスタートしよう</p>
       </div>
-      <div class="metric">
-        <span>Level</span>
-        <strong id="level">1</strong>
-      </div>
-      <div class="metric">
-        <span>Lines</span>
-        <strong id="lines">0</strong>
+
+      <div class="mode-grid">
+        <button class="mode-card" data-mode="normal" type="button">
+          <span class="mode-icon">◆</span>
+          <strong>ノーマルモード</strong>
+          <span>いつものルールでじっくりプレイ</span>
+          <em>ベスト <b data-best="normal">0</b></em>
+        </button>
+
+        <button class="mode-card kids-card" data-mode="kids" type="button">
+          <span class="mode-icon">★</span>
+          <strong>キッズモード</strong>
+          <span>ゆっくり、かわいく、プレイボール！</span>
+          <em>ベスト <b data-best="kids">0</b></em>
+        </button>
+
+        <button class="mode-card challenge-card" data-mode="kids3min" type="button">
+          <span class="mode-icon">⚾</span>
+          <strong>3分チャレンジ</strong>
+          <span>180秒でどこまでいけるかな</span>
+          <em>ベスト <b data-best="kids3min">0</b></em>
+        </button>
       </div>
     </section>
 
-    <section class="play-layout">
-      <aside class="side-panel left-panel" aria-label="Hold piece">
-        <h2>Hold</h2>
-        <canvas id="holdCanvas" width="120" height="120" aria-label="Held block"></canvas>
-        <button id="holdButton" class="compact-button" type="button">Hold</button>
-      </aside>
+    <section id="gameScreen" class="game-shell hidden" aria-label="ゲーム画面">
+      <header class="game-topbar">
+        <button id="modeBackButton" class="top-button" type="button">モード選択</button>
+        <div>
+          <p id="modeName" class="mode-name">ノーマルモード</p>
+          <p id="modeHint" class="mode-hint">Ready</p>
+        </div>
+        <button id="soundButton" class="top-button" type="button" aria-pressed="true">音 ON</button>
+      </header>
 
-      <section class="board-wrap" aria-label="Play field">
-        <canvas id="gameCanvas" width="300" height="600"></canvas>
-        <div id="overlay" class="overlay hidden" aria-live="polite">
-          <strong id="overlayTitle"></strong>
-          <span id="overlayText"></span>
+      <section class="status-strip" aria-label="ゲーム情報">
+        <div class="metric">
+          <span id="scoreLabel">Score</span>
+          <strong id="score">0</strong>
+        </div>
+        <div class="metric">
+          <span id="levelLabel">Level</span>
+          <strong id="level">1</strong>
+          <small id="rankText"></small>
+        </div>
+        <div class="metric">
+          <span id="linesLabel">Lines</span>
+          <strong id="lines">0</strong>
+        </div>
+        <div id="timerMetric" class="metric timer-metric hidden">
+          <span>のこり</span>
+          <strong id="timer">3:00</strong>
         </div>
       </section>
 
-      <aside class="side-panel right-panel" aria-label="Next piece">
-        <h2>Next</h2>
-        <canvas id="nextCanvas" width="120" height="120" aria-label="Next block"></canvas>
-        <button id="pauseButton" class="compact-button" type="button">Pause</button>
-        <button id="restartButton" class="compact-button" type="button">Restart</button>
-      </aside>
-    </section>
+      <section class="play-layout">
+        <aside class="side-panel left-panel" aria-label="ホールド">
+          <h2 id="holdTitle">Hold</h2>
+          <canvas id="holdCanvas" width="120" height="120" aria-label="ホールドブロック"></canvas>
+          <button id="holdButton" class="compact-button" type="button">Hold</button>
+        </aside>
 
-    <section class="touch-controls" aria-label="Touch controls">
-      <div class="control-row">
-        <button data-action="left" class="touch-button" type="button" aria-label="Move left">&larr;</button>
-        <button data-action="rotate" class="touch-button" type="button" aria-label="Rotate">&#8635;</button>
-        <button data-action="right" class="touch-button" type="button" aria-label="Move right">&rarr;</button>
-      </div>
-      <div class="control-row">
-        <button data-action="softDrop" class="touch-button" type="button" aria-label="Soft drop">&darr;</button>
-        <button data-action="hardDrop" class="touch-button wide" type="button" aria-label="Hard drop">Drop</button>
-        <button data-action="hold" class="touch-button" type="button" aria-label="Hold">Hold</button>
-      </div>
+        <section class="board-wrap" aria-label="プレイフィールド">
+          <canvas id="gameCanvas" width="300" height="600"></canvas>
+          <div id="cheerMessage" class="cheer-message hidden" aria-live="polite"></div>
+          <div id="scorePop" class="score-pop hidden" aria-hidden="true"></div>
+          <div id="overlay" class="overlay hidden" aria-live="polite">
+            <strong id="overlayTitle"></strong>
+            <span id="overlayText"></span>
+            <div id="overlayStats" class="overlay-stats"></div>
+            <button id="overlayRestartButton" class="overlay-button hidden" type="button">もう一回</button>
+          </div>
+        </section>
+
+        <aside class="side-panel right-panel" aria-label="次のブロック">
+          <h2 id="nextTitle">Next</h2>
+          <canvas id="nextCanvas" width="120" height="120" aria-label="次のブロック"></canvas>
+          <button id="pauseButton" class="compact-button" type="button">Pause</button>
+          <button id="restartButton" class="compact-button" type="button">Restart</button>
+        </aside>
+      </section>
+
+      <section class="touch-controls" aria-label="タッチ操作">
+        <div class="control-row">
+          <button data-action="left" class="touch-button" type="button" aria-label="左へ移動">←</button>
+          <button data-action="rotate" class="touch-button" type="button" aria-label="回転">↻</button>
+          <button data-action="right" class="touch-button" type="button" aria-label="右へ移動">→</button>
+        </div>
+        <div class="control-row">
+          <button data-action="softDrop" class="touch-button" type="button" aria-label="ソフトドロップ">↓</button>
+          <button data-action="hardDrop" class="touch-button wide" type="button" aria-label="ハードドロップ">Drop</button>
+          <button data-action="hold" class="touch-button" type="button" aria-label="ホールド">Hold</button>
+        </div>
+      </section>
     </section>
   </main>
 

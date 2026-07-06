@@ -6,6 +6,8 @@ const BLOCK = 30;
 const PREVIEW_BLOCK = 24;
 const LINE_POINTS = [0, 100, 300, 500, 800];
 const BEST_PREFIX = "fallingBlocksBest:";
+const NORMAL_CLEAR_DURATION = 420;
+const KIDS_CLEAR_DURATION = 500;
 
 const MODES = {
   normal: {
@@ -136,6 +138,10 @@ let lastTime;
 let lockCounter;
 let gameOver;
 let paused;
+let isAnimating;
+let clearingLines;
+let clearStartedAt;
+let clearAnimationToken = 0;
 let animationId;
 let activeTouchInterval = null;
 let activeMode = MODES.normal;
@@ -211,6 +217,10 @@ function resetGame() {
   timeRemaining = activeMode.timeLimit;
   gameOver = false;
   paused = false;
+  isAnimating = false;
+  clearingLines = [];
+  clearStartedAt = 0;
+  clearAnimationToken += 1;
   pauseButton.textContent = activeMode.kidFriendly ? "お休み" : "Pause";
   updateStats();
   hideOverlay();
@@ -226,7 +236,7 @@ function update(time = 0) {
   const delta = Math.min(80, time - lastTime);
   lastTime = time;
 
-  if (!paused && !gameOver && current) {
+  if (!paused && !gameOver && current && !isAnimating) {
     updateTimer(delta);
     dropCounter += delta;
     if (dropCounter > dropInterval) gravityDrop();
@@ -351,8 +361,8 @@ function holdPiece() {
   if (collides(current.matrix, current.x, current.y)) handleSpawnBlocked();
 }
 
-function lockPiece() {
-  if (!current || gameOver) return;
+async function lockPiece() {
+  if (!current || gameOver || isAnimating) return;
   for (let y = 0; y < current.matrix.length; y += 1) {
     for (let x = 0; x < current.matrix[y].length; x += 1) {
       if (!current.matrix[y][x]) continue;
@@ -367,26 +377,68 @@ function lockPiece() {
   }
 
   playSound("land");
-  const cleared = clearLines();
-  if (cleared > 0) {
-    applyLineScore(cleared);
+  current = null;
+  const completedLines = findCompletedLines();
+  if (completedLines.length > 0) {
+    const completed = await clearCompletedLines(completedLines);
+    if (!completed) return;
   } else {
     combo = 0;
   }
-  spawnNextPiece();
+  if (!gameOver) spawnNextPiece();
 }
 
-function clearLines() {
-  let cleared = 0;
+function findCompletedLines() {
+  const completed = [];
   for (let y = ROWS - 1; y >= 0; y -= 1) {
     if (board[y].every(Boolean)) {
-      board.splice(y, 1);
-      board.unshift(Array(COLS).fill(null));
-      cleared += 1;
-      y += 1;
+      completed.push(y);
     }
   }
-  return cleared;
+  return completed;
+}
+
+async function clearCompletedLines(completedLines) {
+  isAnimating = true;
+  clearingLines = completedLines.slice();
+  clearStartedAt = performance.now();
+  const token = ++clearAnimationToken;
+  playLineClearEffect(completedLines.length);
+  applyLineScore(completedLines.length);
+  await wait(getLineClearDuration());
+  if (token !== clearAnimationToken || gameOver) return false;
+  removeCompletedLines(completedLines);
+  clearingLines = [];
+  clearStartedAt = 0;
+  isAnimating = false;
+  return true;
+}
+
+function removeCompletedLines(completedLines) {
+  const clearSet = new Set(completedLines);
+  board = board.filter((_, index) => !clearSet.has(index));
+  while (board.length < ROWS) {
+    board.unshift(Array(COLS).fill(null));
+  }
+}
+
+function wait(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function getLineClearDuration() {
+  return activeMode.kidFriendly ? KIDS_CLEAR_DURATION : NORMAL_CLEAR_DURATION;
+}
+
+function playLineClearEffect(cleared) {
+  if (activeMode.kidFriendly) {
+    if (cleared >= 4) showCheer("スーパープレー！");
+    else if (cleared >= 3) showCheer("ビッグプレー！");
+    else if (cleared >= 2) showCheer("ナイスプレー！");
+  }
+  if (cleared >= 4) playSound("clearMega");
+  else if (cleared >= 2) playSound("clearBig");
+  else playSound("clear");
 }
 
 function applyLineScore(cleared) {
@@ -401,7 +453,9 @@ function applyLineScore(cleared) {
   addScore(gained, activeMode.kidFriendly && combo > 1 ? `+${gained} コンボボーナス` : `+${gained}`);
 
   if (activeMode.kidFriendly) {
-    if (cleared >= 2) showCheer("ビッグプレー！");
+    if (cleared >= 4) showCheer("スーパープレー！");
+    else if (cleared >= 3) showCheer("ビッグプレー！");
+    else if (cleared >= 2) showCheer("ナイスプレー！");
     else if (combo > 1) showCheer("コンボ！");
     else showCheer("ナイスプレー！");
   }
@@ -409,8 +463,6 @@ function applyLineScore(cleared) {
   if (level > previousLevel) {
     playSound("level");
     if (activeMode.kidFriendly) showCheer(`${getRankName()}！`);
-  } else {
-    playSound("clear");
   }
   updateStats();
 }
@@ -449,7 +501,7 @@ function addScore(points, label = "") {
 }
 
 function togglePause() {
-  if (gameOver || modeScreen.classList.contains("hidden") === false) return;
+  if (gameOver || isAnimating || modeScreen.classList.contains("hidden") === false) return;
   paused = !paused;
   pauseButton.textContent = paused ? (activeMode.kidFriendly ? "再開" : "Resume") : (activeMode.kidFriendly ? "お休み" : "Pause");
   if (paused) {
@@ -464,6 +516,9 @@ function endGame() {
   if (gameOver) return;
   gameOver = true;
   current = null;
+  isAnimating = false;
+  clearingLines = [];
+  clearAnimationToken += 1;
   playSound("over");
   saveBestScore();
   if (activeMode.kidFriendly) {
@@ -477,6 +532,9 @@ function finishTimedChallenge() {
   if (gameOver) return;
   gameOver = true;
   current = null;
+  isAnimating = false;
+  clearingLines = [];
+  clearAnimationToken += 1;
   timeRemaining = 0;
   updateTimerDisplay();
   playSound("over");
@@ -485,7 +543,7 @@ function finishTimedChallenge() {
 }
 
 function canAct() {
-  return current && !paused && !gameOver && gameScreen.classList.contains("hidden") === false;
+  return current && !paused && !gameOver && !isAnimating && gameScreen.classList.contains("hidden") === false;
 }
 
 function updateStats() {
@@ -602,9 +660,42 @@ function drawBoardBlocks() {
   for (let y = 0; y < ROWS; y += 1) {
     for (let x = 0; x < COLS; x += 1) {
       const type = board[y][x];
-      if (type) drawCell(ctx, x * BLOCK, y * BLOCK, BLOCK, getColor(type), type);
+      if (type) drawCell(ctx, x * BLOCK, y * BLOCK, BLOCK, getColor(type), type, getClearEffect(y, x));
     }
   }
+}
+
+function getClearEffect(row, col) {
+  if (!clearingLines.includes(row) || !clearStartedAt) return null;
+  const elapsed = performance.now() - clearStartedAt;
+  const progress = Math.min(1, elapsed / getLineClearDuration());
+  const wave = activeMode.kidFriendly ? Math.sin(progress * Math.PI * 3 + col * 0.28) : 0;
+  if (activeMode.kidFriendly) {
+    return {
+      progress,
+      opacity: interpolateClear(progress, [1, 1, 0.95, 0.62, 0]),
+      scale: interpolateClear(progress, [1, 1.13, 1.05 + wave * 0.025, 0.84, 0.15]),
+      brightness: interpolateClear(progress, [1, 1.95, 1.65, 1.35, 2.05]),
+      rotation: interpolateClear(progress, [0, -0.05, 0.05, 0, 0])
+    };
+  }
+  return {
+    progress,
+    opacity: interpolateClear(progress, [1, 1, 0.75, 0.35, 0]),
+    scale: interpolateClear(progress, [1, 1.08, 0.92, 0.58, 0.2]),
+    brightness: interpolateClear(progress, [1, 1.8, 1.4, 1.75, 2])
+  };
+}
+
+function interpolateClear(progress, values) {
+  const stops = [0, 0.25, 0.6, 0.8, 1];
+  for (let i = 0; i < stops.length - 1; i += 1) {
+    if (progress <= stops[i + 1]) {
+      const local = (progress - stops[i]) / (stops[i + 1] - stops[i]);
+      return values[i] + (values[i + 1] - values[i]) * local;
+    }
+  }
+  return values[values.length - 1];
 }
 
 function drawMatrix(targetCtx, matrix, offsetX, offsetY, size, type) {
@@ -636,9 +727,23 @@ function drawPreview(targetCtx, matrix, type) {
   });
 }
 
-function drawCell(targetCtx, x, y, size, color, type) {
+function drawCell(targetCtx, x, y, size, color, type, effect = null) {
+  if (effect) {
+    targetCtx.save();
+    targetCtx.globalAlpha = effect.opacity;
+    targetCtx.filter = `brightness(${effect.brightness})`;
+    targetCtx.translate(x + size / 2, y + size / 2);
+    if (effect.rotation) targetCtx.rotate(effect.rotation);
+    targetCtx.scale(effect.scale, effect.scale);
+    x = -size / 2;
+    y = -size / 2;
+  }
   if (activeMode.kidFriendly) {
     drawKidCell(targetCtx, x, y, size, color, type);
+    if (effect) {
+      drawKidClearSparkles(targetCtx, x, y, size, effect.progress);
+      targetCtx.restore();
+    }
     return;
   }
   const gap = Math.max(1, size * 0.06);
@@ -649,6 +754,21 @@ function drawCell(targetCtx, x, y, size, color, type) {
   targetCtx.strokeStyle = "rgba(0, 0, 0, 0.35)";
   targetCtx.lineWidth = 2;
   targetCtx.strokeRect(x + gap, y + gap, size - gap * 2, size - gap * 2);
+  if (effect) targetCtx.restore();
+}
+
+function drawKidClearSparkles(targetCtx, x, y, size, progress) {
+  if (progress < 0.18 || progress > 0.82) return;
+  const alpha = Math.sin((progress - 0.18) / 0.64 * Math.PI) * 0.85;
+  targetCtx.save();
+  targetCtx.globalAlpha = alpha;
+  targetCtx.fillStyle = "#ffffff";
+  targetCtx.font = `900 ${Math.floor(size * 0.28)}px system-ui, sans-serif`;
+  targetCtx.textAlign = "center";
+  targetCtx.textBaseline = "middle";
+  targetCtx.fillText("★", x + size * 0.78, y + size * 0.24);
+  targetCtx.fillText("✦", x + size * 0.26, y + size * 0.72);
+  targetCtx.restore();
 }
 
 function drawKidCell(targetCtx, x, y, size, color, type) {
@@ -780,6 +900,9 @@ function bindButtons() {
 function showModeScreen() {
   gameOver = true;
   current = null;
+  isAnimating = false;
+  clearingLines = [];
+  clearAnimationToken += 1;
   hideOverlay();
   gameScreen.classList.add("hidden");
   modeScreen.classList.remove("hidden");
@@ -815,13 +938,17 @@ function playSound(type) {
       rotate: [420, 0.045, "triangle", 0.035],
       land: [150, 0.055, "sine", 0.04],
       clear: [620, 0.11, "triangle", 0.06],
+      clearBig: [720, 0.14, "triangle", 0.075],
+      clearMega: [860, 0.18, "sine", 0.085],
       level: [760, 0.15, "sine", 0.07],
       over: [120, 0.24, "sawtooth", 0.05]
     };
     const [frequency, duration, wave, volume] = table[type] ?? table.move;
     osc.type = wave;
     osc.frequency.setValueAtTime(frequency, now);
-    if (type === "clear" || type === "level") osc.frequency.exponentialRampToValueAtTime(frequency * 1.35, now + duration);
+    if (type === "clear" || type === "clearBig" || type === "clearMega" || type === "level") {
+      osc.frequency.exponentialRampToValueAtTime(frequency * (type === "clearMega" ? 1.65 : 1.35), now + duration);
+    }
     if (type === "over") osc.frequency.exponentialRampToValueAtTime(70, now + duration);
     gain.gain.setValueAtTime(volume, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
